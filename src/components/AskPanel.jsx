@@ -57,7 +57,7 @@ export default function AskPanel({ onSendQuery }) {
             <button
               type="button"
               className="ask-mic-btn"
-              title="Voice query (ISRO Speech Interface)"
+              title="Voice query"
               aria-label="Voice input"
             >
               <Mic size={16} />
@@ -65,7 +65,7 @@ export default function AskPanel({ onSendQuery }) {
             <button
               type="submit"
               className="ask-submit-btn"
-              title="Send analysis request"
+              title="Submit query"
               aria-label="Submit query"
             >
               <Send size={15} />

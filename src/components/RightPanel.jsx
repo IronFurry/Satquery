@@ -12,6 +12,7 @@ export default function RightPanel() {
       {/* Tab Switcher */}
       <div className="panel-tabs">
         <button
+          type="button"
           className={`ptab ${tab === 'ai' ? 'active' : ''}`}
           onClick={() => setTab('ai')}
         >
@@ -19,6 +20,7 @@ export default function RightPanel() {
           <span>AI Response</span>
         </button>
         <button
+          type="button"
           className={`ptab ${tab === 'trace' ? 'active' : ''}`}
           onClick={() => setTab('trace')}
         >
@@ -110,7 +112,7 @@ export default function RightPanel() {
             {/* Key Insights Card */}
             <div className="insights-card">
               <div className="insights-head">
-                <Lightbulb size={15} className="insights-bulb-icon" />
+                <Lightbulb size={14} className="insights-bulb-icon" />
                 <span>Key Insights</span>
               </div>
               <ul className="insights-list">
@@ -134,7 +136,7 @@ export default function RightPanel() {
           /* Execution Trace Tab */
           <div className="trace-card">
             <div className="trace-header">
-              <span className="trace-pipeline-id">ISRO Pipeline #SAT-9481</span>
+              <span className="trace-pipeline-id">Pipeline #SAT-9481</span>
               <span className="badge-green">356ms · OK</span>
             </div>
             <div className="trace-steps">

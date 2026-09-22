@@ -12,7 +12,7 @@ SATQUERY is structured around a **zero-scroll mission console layout**. All prim
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
 │                                                 APP SHELL (100vh)                                                │
 ├───────────────┬──────────────────────────────────────────────────────────────────────────────────────────────────┤
-│               │ HEADER (50px): "👋 Good morning, Aryan" | ISRO Mission Subtitle | 🔔 | PFP Avatar                │
+│               │ HEADER (50px): "👋 Good morning, User" | ISRO Mission Subtitle | 🔔 | PFP Avatar                 │
 │               ├──────────────────────────────────────────────────────────────────────────────────────────────────┤
 │   SIDEBAR     │ METADATA STRIP (38px): Sentinel-2 (Optical) | Date | Lat/Lng | Resolution (10m) | Cloud Cover    │
 │   (215px)     ├────────────────────────────────────────────────────────────────┬─────────────────────────────────┤
@@ -35,22 +35,34 @@ SATQUERY is structured around a **zero-scroll mission console layout**. All prim
 
 ---
 
-## 🎨 Design System & Aesthetic Guidelines (Crucial for AI Agents)
+## 🎨 Design System: Warm "Instrument Panel" Light Theme
 
-When updating or extending SATQUERY, adhere strictly to the following aesthetic and behavioral guidelines:
+When updating or extending SATQUERY, adhere strictly to the physical instrument panel design system:
 
-### 1. No "Neo-AI" Neon Glows
-- **Forbidden**: Gaudy electric cyan (`#00e0ff`), radioactive outer glows, neon gradient halos, or cyberpunk aesthetics that look like generic consumer AI toys.
-- **Enforced**: Clean, serious, aerospace/defense-grade space navy palette. High-contrast, subdued slate borders, crisp typography, and subtle tech-blue highlights (`#38bdf8`, `#2563eb`).
-- **ISRO Identity**: Subtle touches of official ISRO deep saffron (`#f97316` / `#ea580c`) reserved for official badges and telemetry indicators.
+### 1. Palette Tokens (Exact CSS Variables)
+- `--bg: #F3EEE4` (warm schematic-paper background, not pure white)
+- `--panel: #FBF8F1` (card/panel surface, slightly lighter than bg)
+- `--ink: #2A2622` (primary text — warm near-black)
+- `--ink-dim: #6B6357` (secondary text)
+- `--line: #D8CFBE` (borders — warm grey-tan)
+- `--accent: #E86A1C` (ISRO saffron — reserved for active states only)
+- `--accent-dim: #F4D8B8` (accent's pale tint for subtle fills)
+- `--good: #3F7D5C` (confidence/success, muted olive-green)
+- `--warn: #B8842E` (uncertain/caution, muted amber)
 
-### 2. Viewport & Zero-Scroll Constraint
-- `html, body, #root, .app-shell` have `height: 100%; overflow: hidden;`.
-- Do **NOT** add vertical scrollbars to the entire page.
-- If content grows inside cards or lists, use inner scrollable containers (`overflow-y: auto`) with custom micro-scrollbars.
+### 2. Accent Discipline (Critical)
+- `--accent` is strictly for **ACTIVE/SELECTED** states only (e.g. current map tool, active tab, active mode toggle, live status indicators).
+- **Never** use `--accent` as a general background color or decoration.
+- Default buttons and panels read in `--ink` and `--line`.
+
+### 3. Component Treatment: Physical Instrument Keys
+- **Buttons**: Flat fill, no gradients, raised physical key shadow (`0 1px 2px rgba(42,38,34,0.15)`). Active/pressed states invert to an inset shadow (`inset 0 1px 3px rgba(42,38,34,0.25)`).
+- **Radius Hierarchy**: 4px for action buttons, 10px for container cards.
+- **Toggles**: Styled as physical rocker/slide switches with recessed tracks (`inset 0 1px 2px rgba(42,38,34,0.12)`) and raised active thumbs.
+- **LED Indicators**: Single earned soft glow only on actual LED status dots (`AI Engine Online`, `Live Tile Stream`). All other elements are matte/flat.
 
 ### 3. Header Constraints
-- Header must feature **"Good morning, Aryan"** (or contextual time greeting), ISRO mission subtitle, notification bell, and user avatar.
+- Header must feature **"Good morning, User"** (or contextual time greeting), ISRO mission subtitle, notification bell, and user avatar.
 - **Do NOT place a search bar in the header.**
 
 ### 4. Pinned "Ask SatQuery" Panel
@@ -101,7 +113,7 @@ To connect real-time ISRO imagery feeds, update `MapPanel.jsx` with WMS tile lay
 | Component | Responsibility |
 |---|---|
 | `Sidebar.jsx` | Brand emblem, ISRO mission badge, navigation links, quick analysis actions, AI engine status pill, and settings link. |
-| `Header.jsx` | Contextual greeting ("Good morning, Aryan"), ISRO platform status, notification bell with unread dot, and user avatar profile. |
+| `Header.jsx` | Contextual greeting ("Good morning, User"), ISRO platform status, notification bell with unread dot, user avatar profile, and View Mode toggle (Map Console vs Centered AI Chat). |
 | `MetadataStrip.jsx` | Telemetry bar displaying current satellite mission (Sentinel-2 L2A), acquisition date, lat/long coordinates, spatial resolution (10m), and cloud cover percentage. |
 | `MapPanel.jsx` | Real Leaflet.js interactive map with drawing tool toggles (pointer, bounding box, radius, polygon), layer switcher, top-right region badge, and bottom HUD with live coordinate tracker. |
 | `AskPanel.jsx` | 2-column Q&A and imagery ingestion panel directly beneath the map: query input, quick suggestion pills, drag-and-drop file upload, and analysis type radio selector. |

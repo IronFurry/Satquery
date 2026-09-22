@@ -64,7 +64,7 @@ export default function MapPanel({ onLocationChange }) {
             {t.icon}
           </button>
         ))}
-        <div style={{ width: '100%', height: '1px', background: 'var(--border-dark)', margin: '2px 0' }} />
+        <div className="map-toolbar-divider" />
         <button
           type="button"
           className={`tool-btn ${layer === 'satellite' ? 'active' : ''}`}
@@ -96,7 +96,7 @@ export default function MapPanel({ onLocationChange }) {
       {/* Top Right: Region badge */}
       <div className="map-top-right">
         <div className="map-region-badge">
-          <Navigation size={13} className="icon-cyan" />
+          <Navigation size={13} className="map-nav-icon" />
           <span>Mumbai, Maharashtra</span>
         </div>
       </div>
@@ -125,15 +125,16 @@ export default function MapPanel({ onLocationChange }) {
 
       {/* Bottom HUD */}
       <div className="map-hud">
-        <Navigation size={12} className="icon-cyan" style={{ transform: 'rotate(-30deg)' }} />
+        <Navigation size={12} className="map-nav-icon" style={{ transform: 'rotate(-30deg)' }} />
         <span>N</span>
         <span className="map-hud-sep">|</span>
         <span>{coords}</span>
         <span className="map-hud-sep">|</span>
         <span>Zoom {zoom}</span>
         <span className="map-hud-sep">|</span>
-        <span style={{ color: 'var(--tech-blue)', fontSize: '0.68rem', fontWeight: 600 }}>
-          🛰 Live Tile Stream
+        <span className="map-live-stream-badge">
+          <span className="live-led-dot" />
+          <span>Live Tile Stream</span>
         </span>
       </div>
     </div>
