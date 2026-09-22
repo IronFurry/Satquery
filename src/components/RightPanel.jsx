@@ -4,7 +4,7 @@ import {
   Lightbulb, Download, ArrowRight, TrendingUp, CheckCircle2
 } from 'lucide-react';
 
-export default function RightPanel() {
+export default function RightPanel({ aoiInfo }) {
   const [tab, setTab] = useState('ai');
 
   return (
@@ -43,9 +43,21 @@ export default function RightPanel() {
                 </div>
                 <span className="badge-green">High Confidence</span>
               </div>
+
+              {aoiInfo?.area && (
+                <div className="aoi-sync-banner">
+                  <span className="aoi-sync-indicator" />
+                  <span>
+                    <strong>Target:</strong> Marked {aoiInfo.type?.toUpperCase()} ({aoiInfo.area})
+                    {aoiInfo.centerFormatted && ` · ${aoiInfo.centerFormatted}`}
+                  </span>
+                </div>
+              )}
+
               <p className="detect-desc">
-                I found 142 buildings in the selected area with an average confidence of 94.7%.
-                Most of the buildings are concentrated in the central and eastern parts of the image.
+                {aoiInfo?.area
+                  ? `Analyzed marked ${aoiInfo.type} AOI (${aoiInfo.area} at ${aoiInfo.centerFormatted}). SAM-Geospatial structure detection resolved 142 distinct building footprints within the active boundary with 94.7% confidence.`
+                  : 'I found 142 buildings in the selected area with an average confidence of 94.7%. Most of the buildings are concentrated in the central and eastern parts of the image.'}
               </p>
 
               <div className="stats-row">
@@ -141,7 +153,12 @@ export default function RightPanel() {
             </div>
             <div className="trace-steps">
               {[
-                { step: 'Sentinel-2 L2A Ingestion', time: '24ms' },
+                {
+                  step: aoiInfo?.area
+                    ? `Bounding Geometry Ingestion (${aoiInfo.type?.toUpperCase()} · ${aoiInfo.area})`
+                    : 'Sentinel-2 L2A Ingestion',
+                  time: '24ms'
+                },
                 { step: 'SAM-Geospatial Feature Inference', time: '180ms' },
                 { step: 'Urban Footprint Polygon Vectorization', time: '42ms' },
                 { step: 'Vision-Language Analytical Reasoner V3', time: '110ms' },
@@ -156,7 +173,23 @@ export default function RightPanel() {
             <div className="trace-raw-output">
               <div className="trace-json-title">Response GeoJSON Metadata</div>
               <pre className="trace-pre">
-{`{
+{aoiInfo?.area ? `{
+  "source": "ISRO / Sentinel-2 L2A",
+  "target_aoi": {
+    "type": "${aoiInfo.type}",
+    "area": "${aoiInfo.area}",
+    "center": "${aoiInfo.centerFormatted}"${aoiInfo.nwFormatted ? `,
+    "bounds": {
+      "nw": "${aoiInfo.nwFormatted}",
+      "se": "${aoiInfo.seFormatted}"
+    }` : ''}
+  },
+  "features_detected": 142,
+  "confidence_mean": 0.947,
+  "projection": "EPSG:4326",
+  "cloud_cover_pct": 1.8,
+  "acquisition_date": "2024-03-12"
+}` : `{
   "source": "ISRO / Sentinel-2 L2A",
   "aoi": "Mumbai, Maharashtra (19.0760 N, 72.8777 E)",
   "features_detected": 142,

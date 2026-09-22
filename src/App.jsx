@@ -12,6 +12,19 @@ export default function App() {
   const [viewMode, setViewMode] = useState('console'); // 'console' | 'chat'
   const [theme, setTheme] = useState('dark'); // 'dark' (proper black) | 'light' (warm instrument)
   const [coords, setCoords] = useState('19.0760° N, 72.8777° E');
+  const [aoiInfo, setAoiInfo] = useState(null);
+  const [injectedPrompt, setInjectedPrompt] = useState(null);
+
+  const handleLocationChange = (newCoords, aoiData) => {
+    setCoords(newCoords);
+    if (aoiData !== undefined) {
+      setAoiInfo(aoiData);
+    }
+  };
+
+  const handlePasteAoiToChat = (text) => {
+    setInjectedPrompt(text);
+  };
 
   const handleQuery = (q) => {
     console.log('[SatQuery Analysis]:', q);
@@ -30,21 +43,33 @@ export default function App() {
           theme={theme}
           setTheme={setTheme}
         />
-        <MetadataStrip coords={coords} />
+        <MetadataStrip coords={coords} aoiInfo={aoiInfo} />
 
         {/* ── View: Map Console vs Centered AI Chat ── */}
         {viewMode === 'console' ? (
           <div className="workspace-grid">
             <div className="map-and-ask-col">
-              <MapPanel onLocationChange={setCoords} />
-              <AskPanel onSendQuery={handleQuery} />
+              <MapPanel
+                onLocationChange={handleLocationChange}
+                onPasteAoiToChat={handlePasteAoiToChat}
+              />
+              <AskPanel
+                onSendQuery={handleQuery}
+                aoiInfo={aoiInfo}
+                injectedPrompt={injectedPrompt}
+              />
             </div>
             <div className="insights-col">
-              <RightPanel />
+              <RightPanel aoiInfo={aoiInfo} />
             </div>
           </div>
         ) : (
-          <CenteredChatView onSwitchToMap={() => setViewMode('console')} />
+          <CenteredChatView
+            onSwitchToMap={() => setViewMode('console')}
+            aoiInfo={aoiInfo}
+            injectedPrompt={injectedPrompt}
+            onPasteAoiToChat={handlePasteAoiToChat}
+          />
         )}
       </div>
     </div>

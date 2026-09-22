@@ -32,12 +32,18 @@ const EXPLORE_SUGGESTIONS = [
   }
 ];
 
-export default function CenteredChatView({ onSwitchToMap }) {
-  const [input, setInput] = useState('');
+export default function CenteredChatView({ onSwitchToMap, aoiInfo, injectedPrompt }) {
+  const [input, setInput] = useState(injectedPrompt || '');
   const [analysisType, setAnalysisType] = useState('single');
   // Starts with NO query, exactly like ChatGPT/Gemini
   const [messages, setMessages] = useState([]);
   const [attachedFile, setAttachedFile] = useState(null);
+
+  React.useEffect(() => {
+    if (injectedPrompt) {
+      setInput(injectedPrompt);
+    }
+  }, [injectedPrompt]);
 
   const handleSend = (textToSend) => {
     const query = (textToSend || input).trim();
@@ -105,6 +111,35 @@ export default function CenteredChatView({ onSwitchToMap }) {
                   onClick={() => setAttachedFile(null)}
                 >
                   ×
+                </button>
+              </div>
+            )}
+
+            {aoiInfo?.area && (
+              <div className="aoi-attached-banner" style={{ maxWidth: '640px', width: '100%', marginBottom: '8px' }}>
+                <div className="aoi-attached-left">
+                  <span className="aoi-attached-pulse" />
+                  <span className="aoi-attached-type">
+                    {aoiInfo.type === 'box' ? 'Box AOI' : aoiInfo.type === 'circle' ? 'Radius AOI' : 'Polygon AOI'}
+                  </span>
+                  <span className="aoi-attached-meta">
+                    {aoiInfo.area} · {aoiInfo.centerFormatted}
+                    {aoiInfo.nwFormatted && ` [NW ${aoiInfo.nwFormatted} · SE ${aoiInfo.seFormatted}]`}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="aoi-paste-chip-btn"
+                  onClick={() => {
+                    const queryText = aoiInfo.type === 'box'
+                      ? `Analyze marked Box AOI [Area: ${aoiInfo.area}, Center: ${aoiInfo.centerFormatted}${aoiInfo.nwFormatted ? `, Bounds: NW ${aoiInfo.nwFormatted} · SE ${aoiInfo.seFormatted}` : ''}]: Detect and count all structures, buildings, and land changes in this box.`
+                      : `Analyze marked AOI [Area: ${aoiInfo.area}, Center: ${aoiInfo.centerFormatted}]: Detect features and structures in this zone.`;
+                    setInput(queryText);
+                  }}
+                  title="Insert marked box coordinates into query"
+                >
+                  <Sparkles size={11} />
+                  <span>Insert in chat</span>
                 </button>
               </div>
             )}

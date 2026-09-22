@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Sparkles, Image as ImageIcon, Mic, Send, UploadCloud } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Sparkles, Image as ImageIcon, Mic, Send, UploadCloud, CornerDownLeft } from 'lucide-react';
 
 const SUGGESTED_QUERIES = [
   'Count buildings',
@@ -10,10 +10,36 @@ const SUGGESTED_QUERIES = [
   'Analyze vegetation'
 ];
 
-export default function AskPanel({ onSendQuery }) {
+function generateAoiPrompt(aoi) {
+  if (!aoi) return 'Analyze this satellite imagery for key structures and changes.';
+  if (aoi.type === 'box') {
+    return `Analyze marked Box AOI [Area: ${aoi.area}, Center: ${aoi.centerFormatted}${aoi.nwFormatted ? `, Bounds: NW ${aoi.nwFormatted} · SE ${aoi.seFormatted}` : ''}]: Detect and count all structures, buildings, and land changes in this box.`;
+  }
+  if (aoi.type === 'circle') {
+    return `Analyze marked Radius AOI [Area: ${aoi.area}, Center: ${aoi.centerFormatted}, Radius: ${aoi.radiusFormatted || ''}]: Detect and inspect all features in this circular zone.`;
+  }
+  return `Analyze marked Polygon AOI [Area: ${aoi.area}, Centroid: ${aoi.centerFormatted}, Vertices: ${aoi.vertexCount || 3} pts]: Detect all features inside this marked boundary.`;
+}
+
+export default function AskPanel({ onSendQuery, aoiInfo, injectedPrompt }) {
   const [prompt, setPrompt] = useState('How many buildings are present here?');
   const [analysisType, setAnalysisType] = useState('single');
   const [isDragging, setIsDragging] = useState(false);
+  const inputRef = useRef(null);
+
+  // Sync injected prompt from MapPanel AOI button
+  useEffect(() => {
+    if (injectedPrompt) {
+      setPrompt(injectedPrompt);
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }
+  }, [injectedPrompt]);
+
+  const pills = aoiInfo?.area
+    ? [`Analyze marked AOI (${aoiInfo.area})`, ...SUGGESTED_QUERIES]
+    : SUGGESTED_QUERIES;
 
   const handleSubmit = (e) => {
     if (e) e.preventDefault();
@@ -23,8 +49,23 @@ export default function AskPanel({ onSendQuery }) {
   };
 
   const handlePillClick = (q) => {
+    if (q.startsWith('Analyze marked AOI') && aoiInfo) {
+      const richPrompt = generateAoiPrompt(aoiInfo);
+      setPrompt(richPrompt);
+      if (onSendQuery) onSendQuery(richPrompt);
+      return;
+    }
     setPrompt(q);
     if (onSendQuery) onSendQuery(q);
+  };
+
+  const handlePasteAoi = () => {
+    if (!aoiInfo) return;
+    const text = generateAoiPrompt(aoiInfo);
+    setPrompt(text);
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
   };
 
   return (
@@ -41,12 +82,38 @@ export default function AskPanel({ onSendQuery }) {
           </div>
         </div>
 
+        {/* Attached AOI Banner if marked on map */}
+        {aoiInfo?.area && (
+          <div className="aoi-attached-banner">
+            <div className="aoi-attached-left">
+              <span className="aoi-attached-pulse" />
+              <span className="aoi-attached-type">
+                {aoiInfo.type === 'box' ? 'Box AOI' : aoiInfo.type === 'circle' ? 'Radius AOI' : 'Polygon AOI'}
+              </span>
+              <span className="aoi-attached-meta">
+                {aoiInfo.area} · {aoiInfo.centerFormatted}
+                {aoiInfo.nwFormatted && ` [Bounds: NW ${aoiInfo.nwFormatted} · SE ${aoiInfo.seFormatted}]`}
+              </span>
+            </div>
+            <button
+              type="button"
+              className="aoi-paste-chip-btn"
+              onClick={handlePasteAoi}
+              title="Paste marked area coordinates into prompt"
+            >
+              <Sparkles size={11} />
+              <span>Paste in chat</span>
+            </button>
+          </div>
+        )}
+
         {/* Input box */}
         <form className="ask-input-box" onSubmit={handleSubmit}>
           <div className="ask-input-left-icon">
             <ImageIcon size={18} />
           </div>
           <input
+            ref={inputRef}
             type="text"
             className="ask-text-input"
             value={prompt}
@@ -77,11 +144,11 @@ export default function AskPanel({ onSendQuery }) {
         <div className="try-asking-row">
           <span className="try-asking-label">Try asking</span>
           <div className="try-asking-pills">
-            {SUGGESTED_QUERIES.map((q) => (
+            {pills.map((q) => (
               <button
                 key={q}
                 type="button"
-                className={`try-pill ${prompt === q ? 'active' : ''}`}
+                className={`try-pill ${prompt === q ? 'active' : ''} ${q.startsWith('Analyze marked AOI') ? 'aoi-pill-accent' : ''}`}
                 onClick={() => handlePillClick(q)}
               >
                 {q}
